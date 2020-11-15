@@ -1791,7 +1791,7 @@ Vec3f shade(parser::Scene scene, Ray2 primaryRay, int recursionTracker){
 
             //int mat_id = scene.meshes[objIndex].material_id;
             //int mat_id ;
-
+            /*
             if (objType == 1)
             {
                 mat_id = scene.meshes[objIndex].material_id;
@@ -1807,7 +1807,7 @@ Vec3f shade(parser::Scene scene, Ray2 primaryRay, int recursionTracker){
             }else{
                 printf("ERROR: Object Type\n");
             }
-
+            */
 
 
             
@@ -1936,47 +1936,7 @@ Vec3f shade(parser::Scene scene, Ray2 primaryRay, int recursionTracker){
                 Ray2 ReflectanceRay = mirrorReflectanceRay(primaryRay,closest_intersection_info );
                 mirror = shade(scene, ReflectanceRay, recursionTracker );
 
-                //mirror = Vec3f(100,100,100);
                 
-                //std::cout << "ID:" << objects[k]->matIndex-1 << endl;
-                //std::cout << "mirrorRef x: " << materials[objects[k]->matIndex-1]->mirrorRef.x << endl;
-                //std::cout << "mirrorRef y: " << materials[objects[k]->matIndex-1]->mirrorRef.y << endl;
-                //std::cout << "mirrorRef z: " << materials[objects[k]->matIndex-1]->mirrorRef.z << endl;
-                
-
-                //Vec3f mirrorShadingParams = materials[objects[k]->matIndex-1]->mirrorRef; // for RGB values -> between 0 and 1
-                
-                //Vec3f mirrorShadingParams = scene.materials[scene.meshes[objIndex].material_id-1].mirror; // for RGB values -> between 0 and 1
-                //Vec3f mirrorShadingParams ;
-
-                /*
-                if (objType == 1)
-                {
-                    mirrorShadingParams = scene.materials[scene.meshes[objIndex].material_id-1].mirror; // for RGB values -> between 0 and 1
-
-                    
-                }else if (objType == 2)
-                {
-                    mirrorShadingParams = scene.materials[scene.triangles[objIndex].material_id-1].mirror; // for RGB values -> between 0 and 1
-                    
-                    
-                }else if (objType == 3)
-                {
-                    mirrorShadingParams = scene.materials[scene.spheres[objIndex].material_id-1].mirror; // for RGB values -> between 0 and 1
-                    
-                    
-                }else{
-                    printf("ERROR: Object Type\n");
-                }
-                */
-
-                //mirrorShadingParams = scene.materials[closest_material_id-1].mirror;
-                //mirrorShadingParams = scene.materials[1].mirror;
-
-                //printf("Closest Material ID %d \n",closest_material_id);
-                //printf("Mirror Reflectance Parameters: %d %d %d\n", scene.materials[closest_material_id-1].mirror.x, scene.materials[closest_material_id-1].mirror.y, scene.materials[closest_material_id-1].mirror.z);
-                //printf("Mirror Reflectance Parameters: %lf %lf %lf\n", scene.materials[0].mirror.x, scene.materials[0].mirror.y, scene.materials[0].mirror.z);
-                //Vec3f mirrorShadingParams(0.2,0.2,0.2);
                 
                 Vec3f mirrorShadingParams;
 
