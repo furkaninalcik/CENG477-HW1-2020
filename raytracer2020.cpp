@@ -1744,7 +1744,7 @@ Vec3f shade(parser::Scene scene, Ray2 primaryRay, int recursionTracker){
     int closest_material_id; // material id of the closest object
     int mat_id ;
     
-
+        /*
 
         for (int k = 0; k < scene.meshes.size() + scene.triangles.size() + scene.spheres.size(); ++k)
         {
@@ -1782,9 +1782,61 @@ Vec3f shade(parser::Scene scene, Ray2 primaryRay, int recursionTracker){
             }
 
             //intersection_info = objects[k]->intersect(primaryRay);
+        }*/
+
+
+        for (int k = 0; k < scene.spheres.size(); ++k)
+        {
+
+            
+            intersection_info = intersect(scene.spheres[k], primaryRay,scene);
+            mat_id = scene.spheres[k].material_id;
+
+            if (intersection_info.intersection && intersection_info.t < closest_intersection_info.t)
+            {
+                closest_intersection_info = intersection_info;
+                closest_material_id = mat_id;
+            }
+
         }
 
-        if(closest_intersection_info.intersection){
+        for (int k = 0; k < scene.triangles.size(); ++k)
+        {
+
+            
+            intersection_info = intersect(scene.triangles[k], primaryRay,scene);
+            mat_id = scene.triangles[k].material_id;
+
+            if (intersection_info.intersection && intersection_info.t < closest_intersection_info.t)
+            {
+                closest_intersection_info = intersection_info;
+                closest_material_id = mat_id;
+            }
+
+        }
+
+        for (int k = 0; k < scene.meshes.size(); ++k)
+        {
+
+            
+            intersection_info = intersect(scene.meshes[k], primaryRay,scene);
+            mat_id = scene.meshes[k].material_id;
+
+            if (intersection_info.intersection && intersection_info.t < closest_intersection_info.t)
+            {
+                closest_intersection_info = intersection_info;
+                closest_material_id = mat_id;
+            }
+
+        }
+
+        if (!closest_intersection_info.intersection)
+        {
+            return {scene.background_color.x, scene.background_color.y, scene.background_color.z};
+            //return {10, 10, 100};
+        }
+
+        else{
             no_intersection = false;
             
             //int mat_id = objects[k]->matIndex;
@@ -1853,7 +1905,7 @@ Vec3f shade(parser::Scene scene, Ray2 primaryRay, int recursionTracker){
 
                 ReturnVal shadowRay_intersection_info;
 
-
+                /*
                 int objType2  = 0;
                 int objIndex2 = 0;
                 
@@ -1910,6 +1962,108 @@ Vec3f shade(parser::Scene scene, Ray2 primaryRay, int recursionTracker){
 
                     }    
                 }
+                */
+
+
+
+
+
+
+
+                for (int k = 0; k < scene.spheres.size(); ++k)
+                {
+
+                    
+                    shadowRay_intersection_info = intersect(scene.spheres[k], shadowRay,scene);
+
+                    if (shadowRay_intersection_info.intersection){
+
+                        //Vec3f intersection_point = closest_intersection_info.intersection_point;
+                        Vec3f intersection_point(closest_intersection_info.intersection_point.x, closest_intersection_info.intersection_point.y, closest_intersection_info.intersection_point.z);
+
+                        //Vec3f shadowRay_intersection_point = shadowRay_intersection_info.intersection_point;
+                        Vec3f shadowRay_intersection_point(shadowRay_intersection_info.intersection_point.x,shadowRay_intersection_info.intersection_point.y,shadowRay_intersection_info.intersection_point.z);
+
+                        float light_intersectionPoint_distance    = (light_position - intersection_point).norm();
+                        float intersectionPoint_obstacle_distance = (shadowRay_intersection_point - intersection_point).norm();
+
+                        if (light_intersectionPoint_distance > intersectionPoint_obstacle_distance)
+                        {
+                            shadowRay_object_intersection = true;
+                            break;
+                        }
+
+
+                    }  
+
+                }
+
+                if (!shadowRay_object_intersection)
+                {
+                    for (int k = 0; k < scene.triangles.size(); ++k)
+                    {
+                        
+                        shadowRay_intersection_info = intersect(scene.triangles[k], shadowRay,scene);
+
+                        if (shadowRay_intersection_info.intersection){
+
+                            //Vec3f intersection_point = closest_intersection_info.intersection_point;
+                            Vec3f intersection_point(closest_intersection_info.intersection_point.x, closest_intersection_info.intersection_point.y, closest_intersection_info.intersection_point.z);
+
+                            //Vec3f shadowRay_intersection_point = shadowRay_intersection_info.intersection_point;
+                            Vec3f shadowRay_intersection_point(shadowRay_intersection_info.intersection_point.x,shadowRay_intersection_info.intersection_point.y,shadowRay_intersection_info.intersection_point.z);
+
+                            float light_intersectionPoint_distance    = (light_position - intersection_point).norm();
+                            float intersectionPoint_obstacle_distance = (shadowRay_intersection_point - intersection_point).norm();
+
+                            if (light_intersectionPoint_distance > intersectionPoint_obstacle_distance)
+                            {
+                                shadowRay_object_intersection = true;
+                                break;
+                            }
+
+
+                        }  
+
+                    }
+                    
+                }
+
+                if (!shadowRay_object_intersection)
+                {
+                    for (int k = 0; k < scene.meshes.size(); ++k)
+                    {
+                        
+                        shadowRay_intersection_info = intersect(scene.meshes[k], shadowRay,scene);
+
+                        if (shadowRay_intersection_info.intersection){
+
+                            //Vec3f intersection_point = closest_intersection_info.intersection_point;
+                            Vec3f intersection_point(closest_intersection_info.intersection_point.x, closest_intersection_info.intersection_point.y, closest_intersection_info.intersection_point.z);
+
+                            //Vec3f shadowRay_intersection_point = shadowRay_intersection_info.intersection_point;
+                            Vec3f shadowRay_intersection_point(shadowRay_intersection_info.intersection_point.x,shadowRay_intersection_info.intersection_point.y,shadowRay_intersection_info.intersection_point.z);
+
+                            float light_intersectionPoint_distance    = (light_position - intersection_point).norm();
+                            float intersectionPoint_obstacle_distance = (shadowRay_intersection_point - intersection_point).norm();
+
+                            if (light_intersectionPoint_distance > intersectionPoint_obstacle_distance)
+                            {
+                                shadowRay_object_intersection = true;
+                                break;
+                            }
+
+
+                        }  
+
+                    }
+                    
+                }
+
+
+
+
+
                 if (!shadowRay_object_intersection)
                 {
                     Vec3f sn(closest_intersection_info.surface_normal.x, closest_intersection_info.surface_normal.y, closest_intersection_info.surface_normal.z);
@@ -1983,11 +2137,7 @@ Vec3f shade(parser::Scene scene, Ray2 primaryRay, int recursionTracker){
 
 
     
-    if (no_intersection)
-    {
-        return {scene.background_color.x, scene.background_color.y, scene.background_color.z};
-        //return {10, 10, 100};
-    }
+    
 
 
 }
