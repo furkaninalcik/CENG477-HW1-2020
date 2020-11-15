@@ -42,7 +42,7 @@ struct Vec3f // Is ": parser::Vec3f" necesssary?
     }
 
     Vec3f operator = (parser::Vec3f vector) const { 
-        printf("Assignment! \n" );
+        //printf("Assignment! \n" );
 
         return Vec3f(vector); 
     }
@@ -1973,9 +1973,9 @@ Vec3f shade(parser::Scene scene, Ray2 primaryRay, int recursionTracker){
                 //mirrorShadingParams = scene.materials[closest_material_id-1].mirror;
                 //mirrorShadingParams = scene.materials[1].mirror;
 
-                printf("Closest Material ID %d \n",closest_material_id);
+                //printf("Closest Material ID %d \n",closest_material_id);
                 //printf("Mirror Reflectance Parameters: %d %d %d\n", scene.materials[closest_material_id-1].mirror.x, scene.materials[closest_material_id-1].mirror.y, scene.materials[closest_material_id-1].mirror.z);
-                printf("Mirror Reflectance Parameters: %lf %lf %lf\n", scene.materials[0].mirror.x, scene.materials[0].mirror.y, scene.materials[0].mirror.z);
+                //printf("Mirror Reflectance Parameters: %lf %lf %lf\n", scene.materials[0].mirror.x, scene.materials[0].mirror.y, scene.materials[0].mirror.z);
                 //Vec3f mirrorShadingParams(0.2,0.2,0.2);
                 
                 Vec3f mirrorShadingParams;
@@ -2143,7 +2143,7 @@ Ray2 getPrimaryRay(parser::Camera camera, int col, int row)
 
 
 
-
+// aşağıyı sil 
 
 typedef union Color
 {
@@ -2262,21 +2262,24 @@ int main(int argc, char* argv[])
                 
 
 
-                Ray2 primaryRay = getPrimaryRay(scene.cameras[camera_id],j,i);
+                //Ray2 primaryRay = getPrimaryRay(scene.cameras[camera_id],j,i);
+                Ray2 primaryRay = getPrimaryRay(scene.cameras[camera_id],i,j);
 
                 Vec3f final_shade = shade(scene, primaryRay, recursionTracker);
 
-                Color shade_result;
-                shade_result.red = final_shade.x;
-                shade_result.grn = final_shade.y;
-                shade_result.blu = final_shade.z;
+                printf("Pixel %d %d is colored\n", i,j);
 
-                //image[index++] = final_shade.x;
-                //image[index++] = final_shade.y;
-                //image[index++] = final_shade.z;
+                //Color shade_result;
+                //shade_result.red = final_shade.x;
+                //shade_result.grn = final_shade.y;
+                //shade_result.blu = final_shade.z;
+
+                image[index++] = final_shade.x;
+                image[index++] = final_shade.y;
+                image[index++] = final_shade.z;
 
 
-                img->setPixelValue(i,j,shade_result);
+                //img->setPixelValue(i,j,shade_result);
                 //setPixelValue(i,j,shade_result);
                 
                     
@@ -2287,9 +2290,8 @@ int main(int argc, char* argv[])
 
 
         //img->saveImage(filename);
-        img->saveImage(filename);
 
-        //write_ppm(filename, image, scene.cameras[camera_id].image_width, scene.cameras[camera_id].image_height);
+        write_ppm(filename, image, scene.cameras[camera_id].image_width, scene.cameras[camera_id].image_height);
 
 
 
