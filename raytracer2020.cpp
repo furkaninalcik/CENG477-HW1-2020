@@ -1164,7 +1164,7 @@ Vec3f computeLightContribution2(parser::PointLight light, Vector3f p)
 }
 
 
-Vec3f diffuseShader2(parser::Scene scene, int mat_id, int light_id, Ray2 ray, Vec3f surface_normal, Vec3f intersection_point){
+Vec3f diffuseShader2( int mat_id, int light_id, Ray2 ray, Vec3f surface_normal, Vec3f intersection_point){
 
 
     Vec3f light_position = scene.point_lights[light_id].position;
@@ -1217,7 +1217,7 @@ Vec3f diffuseShader2(parser::Scene scene, int mat_id, int light_id, Ray2 ray, Ve
 
 }
 
-Vec3f ambientShader2(parser::Scene scene, int mat_id){
+Vec3f ambientShader2( int mat_id){
     //////////////////////////////////// AMBIENT SHADING
 
     float ambientRadienceRed   = scene.ambient_light.x;
@@ -1238,7 +1238,7 @@ Vec3f ambientShader2(parser::Scene scene, int mat_id){
     //////////////////////////////////// AMBIENT SHADING
 }
 
-Vec3f specularShader2(parser::Scene scene, int mat_id, int light_id, Ray2 ray, Vec3f surface_normal, Vec3f intersection_point){
+Vec3f specularShader2( int mat_id, int light_id, Ray2 ray, Vec3f surface_normal, Vec3f intersection_point){
 
 
     Vec3f light_position = scene.point_lights[light_id].position;
@@ -1348,7 +1348,7 @@ Vec3f Scene::intersectionDetector(parser::Scene& scene, Ray& eyeRay, float& t_fi
 */
 
 
-ReturnVal intersect(parser::Sphere sphere, Ray2 ray, parser::Scene scene)
+ReturnVal intersect(parser::Sphere sphere, Ray2 ray)
 {
     /***********************************************
      *                                             *
@@ -1432,7 +1432,7 @@ ReturnVal intersect(parser::Sphere sphere, Ray2 ray, parser::Scene scene)
 
 
 
-ReturnVal intersect(parser::Triangle triangle, Ray2 ray, parser::Scene scene){
+ReturnVal intersect(parser::Triangle triangle, Ray2 ray){
 
     /***********************************************
      *                                             *
@@ -1617,7 +1617,7 @@ ReturnVal intersect(parser::Triangle triangle, Ray2 ray, parser::Scene scene){
 
 
 
-ReturnVal intersect(parser::Mesh mesh, Ray2 ray, parser::Scene scene)
+ReturnVal intersect(parser::Mesh mesh, Ray2 ray)
 {
     /***********************************************
      *                                             *
@@ -1654,7 +1654,7 @@ ReturnVal intersect(parser::Mesh mesh, Ray2 ray, parser::Scene scene)
         };
 
 
-        face_intersection_info = intersect(tr, ray, scene);
+        face_intersection_info = intersect(tr, ray);
 
         if (face_intersection_info.intersection && face_intersection_info.t <= t_min)
         {
@@ -1742,13 +1742,16 @@ Vec3f shade(Ray2 primaryRay, int recursionTracker){
     int closest_material_id; // material id of the closest object
     int mat_id ;
     
-       
+    Vec3f diffuse;
+    Vec3f specular;
+    Vec3f mirror;
+    Vec3f ambient;
 
     for (int k = 0; k < scene.spheres.size(); ++k)
     {
 
         
-        intersection_info = intersect(scene.spheres[k], primaryRay,scene);
+        intersection_info = intersect(scene.spheres[k], primaryRay);
         mat_id = scene.spheres[k].material_id;
 
         if (intersection_info.intersection && intersection_info.t < closest_intersection_info.t)
@@ -1763,7 +1766,7 @@ Vec3f shade(Ray2 primaryRay, int recursionTracker){
     {
 
         
-        intersection_info = intersect(scene.triangles[k], primaryRay,scene);
+        intersection_info = intersect(scene.triangles[k], primaryRay);
         mat_id = scene.triangles[k].material_id;
 
         if (intersection_info.intersection && intersection_info.t < closest_intersection_info.t)
@@ -1778,7 +1781,7 @@ Vec3f shade(Ray2 primaryRay, int recursionTracker){
     {
 
         
-        intersection_info = intersect(scene.meshes[k], primaryRay,scene);
+        intersection_info = intersect(scene.meshes[k], primaryRay);
         mat_id = scene.meshes[k].material_id;
 
         if (intersection_info.intersection && intersection_info.t < closest_intersection_info.t)
@@ -1797,11 +1800,11 @@ Vec3f shade(Ray2 primaryRay, int recursionTracker){
 
     else{
         
-        Vec3f ambient  =  ambientShader2(scene, closest_material_id);
+        ambient  =  ambientShader2(closest_material_id);
 
-        Vec3f diffuse  = Vec3f(0,0,0);
-        Vec3f specular = Vec3f(0,0,0);
-        Vec3f mirror   = Vec3f(0,0,0);
+        diffuse  = Vec3f(0,0,0);
+        specular = Vec3f(0,0,0);
+        mirror   = Vec3f(0,0,0);
 
         for (int light_id = 0; light_id < scene.point_lights.size(); ++light_id)
         {
@@ -1845,7 +1848,7 @@ Vec3f shade(Ray2 primaryRay, int recursionTracker){
             {
 
                 
-                shadowRay_intersection_info = intersect(scene.spheres[k], shadowRay,scene);
+                shadowRay_intersection_info = intersect(scene.spheres[k], shadowRay);
 
                 if (shadowRay_intersection_info.intersection){
 
@@ -1874,7 +1877,7 @@ Vec3f shade(Ray2 primaryRay, int recursionTracker){
                 for (int k = 0; k < scene.triangles.size(); ++k)
                 {
                     
-                    shadowRay_intersection_info = intersect(scene.triangles[k], shadowRay,scene);
+                    shadowRay_intersection_info = intersect(scene.triangles[k], shadowRay);
 
                     if (shadowRay_intersection_info.intersection){
 
@@ -1905,7 +1908,7 @@ Vec3f shade(Ray2 primaryRay, int recursionTracker){
                 for (int k = 0; k < scene.meshes.size(); ++k)
                 {
                     
-                    shadowRay_intersection_info = intersect(scene.meshes[k], shadowRay,scene);
+                    shadowRay_intersection_info = intersect(scene.meshes[k], shadowRay);
 
                     if (shadowRay_intersection_info.intersection){
 
@@ -1940,8 +1943,8 @@ Vec3f shade(Ray2 primaryRay, int recursionTracker){
                 Vec3f sn(closest_intersection_info.surface_normal.x, closest_intersection_info.surface_normal.y, closest_intersection_info.surface_normal.z);
                 Vec3f ip(closest_intersection_info.intersection_point.x, closest_intersection_info.intersection_point.y, closest_intersection_info.intersection_point.z);
 
-                diffuse  = diffuse  + diffuseShader2(scene, closest_material_id, light_id, primaryRay, sn, ip);
-                specular = specular + specularShader2(scene, closest_material_id, light_id, primaryRay, sn, ip);
+                diffuse  = diffuse  + diffuseShader2( closest_material_id, light_id, primaryRay, sn, ip);
+                specular = specular + specularShader2( closest_material_id, light_id, primaryRay, sn, ip);
 
                 //diffuse  = diffuse  + diffuseShader2(scene, mat_id, light_id, primaryRay, intersection_info.surface_normal, intersection_info.intersection_point);
                 //specular = specular + specularShader2(scene, mat_id, light_id, primaryRay, intersection_info.surface_normal, intersection_info.intersection_point);
@@ -2223,7 +2226,7 @@ int main(int argc, char* argv[])
     Vec3f final_shade ;
 
     //Image* img;
-    //int recursionTracker = maxRecursionDepth;
+
     int recursionTracker = scene.max_recursion_depth;
     
     for (int camera_id = 0; camera_id < scene.cameras.size(); ++camera_id)
@@ -2243,9 +2246,9 @@ int main(int argc, char* argv[])
         //std::cout << height << endl; 
 
         int index = 0;
-        for (int i = 0; i < width; ++i)
+        for (int i = 0; i < height; ++i)
         {
-            for (int j = 0; j < height; ++j)
+            for (int j = 0; j < width; ++j)
             {
                 
 
