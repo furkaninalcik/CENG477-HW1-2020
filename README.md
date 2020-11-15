@@ -1,3 +1,3 @@
 # CENG477-HW1-2020
-A basic raytracer
+A basic Ray Tracer
 Introduction to Computer Graphics Homework-1 / 2020
