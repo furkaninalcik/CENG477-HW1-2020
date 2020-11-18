@@ -95,25 +95,6 @@ parser::Scene scene;
 
 
 
-typedef struct Vector3f
-{
-    union 
-    {
-        float x;
-        float r;
-    };
-    union
-    {
-        float y;
-        float g;
-    };
-    union
-    {
-        float z;
-        float b;
-    };
-} Vector3f;
-
 
 
 class Ray2{
@@ -139,21 +120,7 @@ class Ray2{
             direction = d;
         }
 
-        Ray2(Vector3f o, Vector3f d ){
-
-            //printf("ray constructor\n");
-
-
-            origin.x = o.x;
-            origin.y = o.y;
-            origin.z = o.z;
-
-
-            direction.x = d.x;
-            direction.y = d.y;
-            direction.z = d.z;
-        }
-
+        
 
         Vec3f RayVect(float t){
 
@@ -177,8 +144,8 @@ typedef struct IntersectionResult
 
     
     bool intersection = false;
-    Vector3f intersection_point;
-    Vector3f surface_normal;
+    Vec3f intersection_point;
+    Vec3f surface_normal;
     float t;  
 
 
@@ -201,12 +168,8 @@ Ray2 mirrorReflectanceRay(Ray2 primaryRay, IntersectionResult intersection_info)
     //Vec3f outGoingRayDirection  = incomingRayDirection + (surfaceNormal*(2*(surfaceNormal).dotProduct((-incomingRayDirection))));
     Vec3f outGoingRayDirection  = incomingRayDirection + (surfaceNormal*(2*dotProduct((surfaceNormal),(-incomingRayDirection))));
 
-    Vector3f direction;
-    direction.x = outGoingRayDirection.x;
-    direction.y = outGoingRayDirection.y;
-    direction.z = outGoingRayDirection.z;
 
-    Ray2 outGoingRay =  Ray2(intersection_info.intersection_point,direction);
+    Ray2 outGoingRay =  Ray2(intersection_info.intersection_point,outGoingRayDirection);
 
 
     return outGoingRay;
@@ -216,36 +179,22 @@ Ray2 mirrorReflectanceRay(Ray2 primaryRay, IntersectionResult intersection_info)
 
 
 
-Vec3f computeLightContribution2(parser::PointLight light, Vector3f p)
+Vec3f computeLightContribution2(parser::PointLight light, Vec3f p)
 {
-    /***********************************************
-     *                                             *
-     * TODO: Implement this function               *
-     *                                             *
-     ***********************************************
-     */
 
 
-
-    Vec3f point_vector(p.x,p.y,p.z);
+    //Vec3f point_vector(p.x,p.y,p.z);
 
     Vec3f position_vector = light.position;
 
     Vec3f intensity_vector = light.intensity;
 
-    float distance = (point_vector - position_vector).norm();
+    float distance = (p - position_vector).norm();
 
     intensity_vector = intensity_vector * (1/(distance*distance));
 
     return intensity_vector;
 
-    //Vector3f intensity_result ;
-    //intensity_result.x = intensity_vector.x; 
-    //intensity_result.y = intensity_vector.y; 
-    //intensity_result.z = intensity_vector.z; 
-
-
-    //return intensity_result;
 
 }
 
@@ -275,23 +224,7 @@ Vec3f diffuseShader2( int mat_id, int light_id, Ray2 ray, Vec3f surface_normal, 
 
 
 
-
-    //irradiance = lightIntensity * (1.0/(lightDistance*lightDistance));
-
-    Vector3f intersection_point_vector3f ;
-    intersection_point_vector3f.x = intersection_point.x; 
-    intersection_point_vector3f.y = intersection_point.y; 
-    intersection_point_vector3f.z = intersection_point.z; 
-/*
-    Vec3f irradiance = Vec3f(0,0,0);
-
-    for (int i = 0; i < lights.size(); ++i)
-    {
-        irradiance = irradiance + lights[i]->computeLightContribution(intersection_point_vector3f);
-
-    }
-*/
-    Vec3f irradiance = computeLightContribution2(scene.point_lights[light_id], intersection_point_vector3f);
+    Vec3f irradiance = computeLightContribution2(scene.point_lights[light_id], intersection_point);
 
     float diffuseShadingRed   = diffuseShadingParams.x * cosTheta * irradiance.x; 
     float diffuseShadingGreen = diffuseShadingParams.y * cosTheta * irradiance.y; 
@@ -318,9 +251,9 @@ Vec3f ambientShader2( int mat_id){
     float ambientShadingGreen = ambientShadingParams.y * ambientRadienceGreen; 
     float ambientShadingBlue  = ambientShadingParams.z * ambientRadienceBlue; 
 
-    Vec3f ambientShading = Vec3f(ambientShadingRed,ambientShadingGreen,ambientShadingBlue);
+    return Vec3f(ambientShadingRed,ambientShadingGreen,ambientShadingBlue);
 
-    return ambientShading;
+    //return ambientShading;
     //////////////////////////////////// AMBIENT SHADING
 }
 
@@ -347,12 +280,9 @@ Vec3f specularShader2( int mat_id, int light_id, Ray2 ray, Vec3f surface_normal,
     float cosAlphaWithPhong = pow(cosAlpha,phong_exponent); 
     //printf("Specular : %lf %lf %lf  \n", specularShadingParams.x, specularShadingParams.y, specularShadingParams.z   );
 
-    Vector3f intersection_point_vector3f ;
-    intersection_point_vector3f.x = intersection_point.x; 
-    intersection_point_vector3f.y = intersection_point.y; 
-    intersection_point_vector3f.z = intersection_point.z; 
 
-    Vec3f irradiance = computeLightContribution2(scene.point_lights[light_id], intersection_point_vector3f);
+
+    Vec3f irradiance = computeLightContribution2(scene.point_lights[light_id], intersection_point);
 
 
     float specularShadingRed   = specularShadingParams.x * cosAlphaWithPhong * irradiance.x; 
@@ -370,12 +300,7 @@ Vec3f specularShader2( int mat_id, int light_id, Ray2 ray, Vec3f surface_normal,
 
 IntersectionResult intersect(parser::Sphere sphere, Ray2 ray)
 {
-    /***********************************************
-     *                                             *
-     * TODO: Implement this function               *
-     *                                             *
-     ***********************************************
-     */
+
 
     float t ;
     IntersectionResult intersection_info;
@@ -420,18 +345,9 @@ IntersectionResult intersect(parser::Sphere sphere, Ray2 ray)
 
             Vec3f pointOnTheSphere  = e + d*t; 
 
-            Vector3f intersectionPoint;
-            intersectionPoint.x = pointOnTheSphere.x; 
-            intersectionPoint.y = pointOnTheSphere.y; 
-            intersectionPoint.z = pointOnTheSphere.z;
+            Vec3f surfaceNormal = (pointOnTheSphere - center) * (1.0 / r);
 
-            Vector3f surfaceNormal;
-            Vec3f surfaceNormal_Temp = (pointOnTheSphere - center) * (1.0 / r);
-            surfaceNormal.x = surfaceNormal_Temp.x; 
-            surfaceNormal.y = surfaceNormal_Temp.y; 
-            surfaceNormal.z = surfaceNormal_Temp.z;
-
-            intersection_info.intersection_point = intersectionPoint;
+            intersection_info.intersection_point = pointOnTheSphere;
             intersection_info.surface_normal = surfaceNormal;
             intersection_info.intersection = true;
             intersection_info.t = t;
@@ -454,12 +370,6 @@ IntersectionResult intersect(parser::Sphere sphere, Ray2 ray)
 
 IntersectionResult intersect(parser::Triangle triangle, Ray2 ray){
 
-    /***********************************************
-     *                                             *
-     * TODO: Implement this function               *
-     *                                             *
-     ***********************************************
-     */
 
     IntersectionResult intersection_info;
 
@@ -485,7 +395,7 @@ IntersectionResult intersect(parser::Triangle triangle, Ray2 ray){
 
     // calculating plane normal
 
-    Vec3f vector_for_cross_product;
+    //Vec3f vector_for_cross_product;
 
 
     //Vec3f normalVector = vector_for_cross_product.crossProduct( v3-v2 , v2-v1);  // BE CAREFULL ABOUT THE ORDER OF THE VERTICES
@@ -493,7 +403,7 @@ IntersectionResult intersect(parser::Triangle triangle, Ray2 ray){
 
 
 
-    Vec3f surfaceNormal_Temp = -normalVector; // TO BE USED BY SHADING PART OF THE CODE
+    Vec3f surfaceNormal = -normalVector; // TO BE USED BY SHADING PART OF THE CODE
 
     if (dotProduct(normalVector,d)  < 0.000001) // if plane and ray are parallel 
     {
@@ -611,18 +521,8 @@ IntersectionResult intersect(parser::Triangle triangle, Ray2 ray){
 
         Vec3f pointOnTheTriangle  = p; 
 
-        Vector3f intersectionPoint;
-        intersectionPoint.x = pointOnTheTriangle.x; 
-        intersectionPoint.y = pointOnTheTriangle.y; 
-        intersectionPoint.z = pointOnTheTriangle.z;
 
-        Vector3f surfaceNormal;
-
-        surfaceNormal.x = surfaceNormal_Temp.x; 
-        surfaceNormal.y = surfaceNormal_Temp.y; 
-        surfaceNormal.z = surfaceNormal_Temp.z;
-
-        intersection_info.intersection_point = intersectionPoint;
+        intersection_info.intersection_point = pointOnTheTriangle;
         intersection_info.surface_normal = surfaceNormal;
         intersection_info.intersection = true;
         intersection_info.t = t;
@@ -639,20 +539,15 @@ IntersectionResult intersect(parser::Triangle triangle, Ray2 ray){
 
 IntersectionResult intersect(parser::Mesh mesh, Ray2 ray)
 {
-    /***********************************************
-     *                                             *
-     * TODO: Implement this function               *
-     *                                             *
-     ***********************************************
-     */
+
 
     int t_min = 100000.0;
 
-    int num_of_faces = mesh.faces.size();
+    //int num_of_faces = mesh.faces.size();
 
-    IntersectionResult intersection_info_array[num_of_faces];
+    IntersectionResult intersection_info_array[mesh.faces.size()];
 
-    IntersectionResult first_intersection_info ;
+    //IntersectionResult first_intersection_info ;
     
     IntersectionResult face_intersection_info ;
     IntersectionResult closest_intersection_info ;
@@ -662,10 +557,6 @@ IntersectionResult intersect(parser::Mesh mesh, Ray2 ray)
 
     for (int i = 0; i < mesh.faces.size(); ++i)
     {    
-        //intersection_info_array[i] = faces[i].intersect(ray); //assigning the list of intersection_infos of the faces
-     
-
-        //face_intersection_info = mesh.faces[i].intersect(ray);
 
         
         parser::Triangle tr {
@@ -717,6 +608,11 @@ Vec3f shade(Ray2 primaryRay, int recursionTracker){
     Vec3f mirror;
     Vec3f ambient;
 
+    float light_intersectionPoint_distance;
+    float intersectionPoint_obstacle_distance;
+
+
+
     for (int k = 0; k < scene.spheres.size(); ++k)
     {
 
@@ -724,7 +620,7 @@ Vec3f shade(Ray2 primaryRay, int recursionTracker){
         intersection_info = intersect(scene.spheres[k], primaryRay);
         mat_id = scene.spheres[k].material_id;
 
-        if (intersection_info.intersection && intersection_info.t < closest_intersection_info.t)
+        if (intersection_info.intersection && intersection_info.t <= closest_intersection_info.t)
         {
             closest_intersection_info = intersection_info;
             closest_material_id = mat_id;
@@ -739,7 +635,7 @@ Vec3f shade(Ray2 primaryRay, int recursionTracker){
         intersection_info = intersect(scene.triangles[k], primaryRay);
         mat_id = scene.triangles[k].material_id;
 
-        if (intersection_info.intersection && intersection_info.t < closest_intersection_info.t)
+        if (intersection_info.intersection && intersection_info.t <= closest_intersection_info.t)
         {
             closest_intersection_info = intersection_info;
             closest_material_id = mat_id;
@@ -754,7 +650,7 @@ Vec3f shade(Ray2 primaryRay, int recursionTracker){
         intersection_info = intersect(scene.meshes[k], primaryRay);
         mat_id = scene.meshes[k].material_id;
 
-        if (intersection_info.intersection && intersection_info.t < closest_intersection_info.t)
+        if (intersection_info.intersection && intersection_info.t <= closest_intersection_info.t)
         {
             closest_intersection_info = intersection_info;
             closest_material_id = mat_id;
@@ -764,7 +660,7 @@ Vec3f shade(Ray2 primaryRay, int recursionTracker){
 
     if (!closest_intersection_info.intersection)
     {
-        return {scene.background_color.x, scene.background_color.y, scene.background_color.z};
+        return {(float)scene.background_color.x, (float)scene.background_color.y, (float)scene.background_color.z};
         //return {10, 10, 100};
     }
 
@@ -781,7 +677,7 @@ Vec3f shade(Ray2 primaryRay, int recursionTracker){
 
             bool shadowRay_object_intersection = false;
             //float epsilon =  shadowRayEps;
-            float epsilon =  scene.shadow_ray_epsilon;
+            //float epsilon =  scene.shadow_ray_epsilon;
             //epsilon =  1000000;
 
 
@@ -794,24 +690,26 @@ Vec3f shade(Ray2 primaryRay, int recursionTracker){
 
             Vec3f intersection_point_to_light = (light_position - intPoint).normalize();
 
-            Vector3f shadowRay_origin, shadowRay_direction;
+            Vec3f shadowRay_origin, shadowRay_direction;
 
-            shadowRay_origin.x = closest_intersection_info.intersection_point.x + intersection_point_to_light.x * epsilon;
-            shadowRay_origin.y = closest_intersection_info.intersection_point.y + intersection_point_to_light.y * epsilon;
-            shadowRay_origin.z = closest_intersection_info.intersection_point.z + intersection_point_to_light.z * epsilon;
+            shadowRay_origin.x = closest_intersection_info.intersection_point.x + intersection_point_to_light.x * scene.shadow_ray_epsilon;
+            shadowRay_origin.y = closest_intersection_info.intersection_point.y + intersection_point_to_light.y * scene.shadow_ray_epsilon;
+            shadowRay_origin.z = closest_intersection_info.intersection_point.z + intersection_point_to_light.z * scene.shadow_ray_epsilon;
 
-            shadowRay_direction.x = intersection_point_to_light.x;
-            shadowRay_direction.y = intersection_point_to_light.y;
-            shadowRay_direction.z = intersection_point_to_light.z;
+            //shadowRay_direction.x = intersection_point_to_light.x;
+            //shadowRay_direction.y = intersection_point_to_light.y;
+            //shadowRay_direction.z = intersection_point_to_light.z;
 
             
-            Ray2 shadowRay = Ray2(shadowRay_origin, shadowRay_direction );
+            Ray2 shadowRay = Ray2(shadowRay_origin, intersection_point_to_light );
 
 
-            float t_to_object;
+            //float t_to_object;
 
             IntersectionResult shadowRay_intersection_info;
 
+            
+            
             
 
             for (int k = 0; k < scene.spheres.size(); ++k)
@@ -821,15 +719,16 @@ Vec3f shade(Ray2 primaryRay, int recursionTracker){
                 shadowRay_intersection_info = intersect(scene.spheres[k], shadowRay);
 
                 if (shadowRay_intersection_info.intersection){
+                    printf("SPHERE SHADOW\n");
 
                     //Vec3f intersection_point = closest_intersection_info.intersection_point;
-                    Vec3f intersection_point(closest_intersection_info.intersection_point.x, closest_intersection_info.intersection_point.y, closest_intersection_info.intersection_point.z);
+                    //Vec3f intersection_point(closest_intersection_info.intersection_point.x, closest_intersection_info.intersection_point.y, closest_intersection_info.intersection_point.z);
 
                     //Vec3f shadowRay_intersection_point = shadowRay_intersection_info.intersection_point;
-                    Vec3f shadowRay_intersection_point(shadowRay_intersection_info.intersection_point.x,shadowRay_intersection_info.intersection_point.y,shadowRay_intersection_info.intersection_point.z);
+                    //Vec3f shadowRay_intersection_point(shadowRay_intersection_info.intersection_point.x,shadowRay_intersection_info.intersection_point.y,shadowRay_intersection_info.intersection_point.z);
 
-                    float light_intersectionPoint_distance    = (light_position - intersection_point).norm();
-                    float intersectionPoint_obstacle_distance = (shadowRay_intersection_point - intersection_point).norm();
+                    light_intersectionPoint_distance    = (light_position - closest_intersection_info.intersection_point).norm();
+                    intersectionPoint_obstacle_distance = (shadowRay_intersection_info.intersection_point - closest_intersection_info.intersection_point).norm();
 
                     if (light_intersectionPoint_distance > intersectionPoint_obstacle_distance)
                     {
@@ -852,13 +751,13 @@ Vec3f shade(Ray2 primaryRay, int recursionTracker){
                     if (shadowRay_intersection_info.intersection){
 
                         //Vec3f intersection_point = closest_intersection_info.intersection_point;
-                        Vec3f intersection_point(closest_intersection_info.intersection_point.x, closest_intersection_info.intersection_point.y, closest_intersection_info.intersection_point.z);
+                        //Vec3f intersection_point(closest_intersection_info.intersection_point.x, closest_intersection_info.intersection_point.y, closest_intersection_info.intersection_point.z);
 
                         //Vec3f shadowRay_intersection_point = shadowRay_intersection_info.intersection_point;
-                        Vec3f shadowRay_intersection_point(shadowRay_intersection_info.intersection_point.x,shadowRay_intersection_info.intersection_point.y,shadowRay_intersection_info.intersection_point.z);
+                        //Vec3f shadowRay_intersection_point(shadowRay_intersection_info.intersection_point.x,shadowRay_intersection_info.intersection_point.y,shadowRay_intersection_info.intersection_point.z);
 
-                        float light_intersectionPoint_distance    = (light_position - intersection_point).norm();
-                        float intersectionPoint_obstacle_distance = (shadowRay_intersection_point - intersection_point).norm();
+                        light_intersectionPoint_distance    = (light_position - closest_intersection_info.intersection_point).norm();
+                        intersectionPoint_obstacle_distance = (shadowRay_intersection_info.intersection_point - closest_intersection_info.intersection_point).norm();
 
                         if (light_intersectionPoint_distance > intersectionPoint_obstacle_distance)
                         {
@@ -883,13 +782,13 @@ Vec3f shade(Ray2 primaryRay, int recursionTracker){
                     if (shadowRay_intersection_info.intersection){
 
                         //Vec3f intersection_point = closest_intersection_info.intersection_point;
-                        Vec3f intersection_point(closest_intersection_info.intersection_point.x, closest_intersection_info.intersection_point.y, closest_intersection_info.intersection_point.z);
+                        //Vec3f intersection_point(closest_intersection_info.intersection_point.x, closest_intersection_info.intersection_point.y, closest_intersection_info.intersection_point.z);
 
                         //Vec3f shadowRay_intersection_point = shadowRay_intersection_info.intersection_point;
-                        Vec3f shadowRay_intersection_point(shadowRay_intersection_info.intersection_point.x,shadowRay_intersection_info.intersection_point.y,shadowRay_intersection_info.intersection_point.z);
+                        //Vec3f shadowRay_intersection_point(shadowRay_intersection_info.intersection_point.x,shadowRay_intersection_info.intersection_point.y,shadowRay_intersection_info.intersection_point.z);
 
-                        float light_intersectionPoint_distance    = (light_position - intersection_point).norm();
-                        float intersectionPoint_obstacle_distance = (shadowRay_intersection_point - intersection_point).norm();
+                        light_intersectionPoint_distance    = (light_position - closest_intersection_info.intersection_point).norm();
+                        intersectionPoint_obstacle_distance = (shadowRay_intersection_info.intersection_point - closest_intersection_info.intersection_point).norm();
 
                         if (light_intersectionPoint_distance > intersectionPoint_obstacle_distance)
                         {
@@ -955,7 +854,7 @@ Vec3f shade(Ray2 primaryRay, int recursionTracker){
             //float mirrorShadingBlue  = mirrorShadingParams.z * mirror.z ; 
 
             //mirror = Vec3f(mirrorShadingRed, mirrorShadingGreen, mirrorShadingBlue);
-            mirror = Vec3f(mirrorShadingParams.x * mirror.x, mirrorShadingParams.y * mirror.y, mirrorShadingParams.z * mirror.z);
+            mirror = Vec3f(scene.materials[closest_material_id-1].mirror.x * mirror.x, scene.materials[closest_material_id-1].mirror.y * mirror.y, scene.materials[closest_material_id-1].mirror.z * mirror.z);
 
             //mirror = Vec3f(0, 0, 0);
 
@@ -993,13 +892,6 @@ Vec3f shade(Ray2 primaryRay, int recursionTracker){
 
 Ray2 getPrimaryRay(parser::Camera camera, int col, int row)
 {
-    /***********************************************
-     *                                             *
-     * TODO: Implement this function               *
-     *                                             *
-     ***********************************************
-     */
-
 
     //Vec3f position;
     //Vec3f gaze;
@@ -1017,7 +909,7 @@ Ray2 getPrimaryRay(parser::Camera camera, int col, int row)
      Vec3f w = camera.gaze; // camera gaze vector in xyz coordinates
      Vec3f v = camera.up; // camera up vector in xyz coordinates
 
-     Vec3f vector_for_member_function ; // created to use crossProduct;
+     //Vec3f vector_for_member_function ; // created to use crossProduct;
 
      //Vec3f u = vector_for_member_function.crossProduct(v,-w); 
      Vec3f u = crossProduct(v,-w); 
@@ -1071,19 +963,10 @@ Ray2 getPrimaryRay(parser::Camera camera, int col, int row)
      s = q + (u * s_u) - (v * s_v);
 
 
-     Vector3f origin_point, direction_vector;
-     
-     origin_point.x = e.x;
-     origin_point.y = e.y;
-     origin_point.z = e.z;
-
      Vec3f normalized_direction_vector = (s-e).normalize();
 
-     direction_vector.x = normalized_direction_vector.x;
-     direction_vector.y = normalized_direction_vector.y;
-     direction_vector.z = normalized_direction_vector.z;
 
-     eyeRay = Ray2(origin_point, direction_vector);
+     eyeRay = Ray2(e, normalized_direction_vector);
 
      return eyeRay;
 
@@ -1092,93 +975,12 @@ Ray2 getPrimaryRay(parser::Camera camera, int col, int row)
 
 
 
-// aşağıyı sil 
-/*
-typedef union Color
-{
-    struct
-    {
-        unsigned char red;
-        unsigned char grn;
-        unsigned char blu;
-    };
-
-    unsigned char channel[3];
-} Color;
-
-
-
-class Image
-{
-    public:
-    Color** data;                   // Image data
-    int width;                      // Image width
-    int height;                     // Image height
-
-    Image(int width, int height);   // Constructor
-    void setPixelValue(int col, int row, const Color& color); // Sets the value of the pixel at the given column and row
-    void saveImage(const char *imageName) const;              // Takes the image name as a file and saves it as a ppm file. 
-};
-
-
-Image::Image(int width, int height)
-    : width(width), height(height)
-    {
-        data = new Color* [height];
-
-        for (int y = 0; y < height; ++y)
-        {
-            data[y] = new Color [width];
-        }
-    }
-
-//
-// Set the value of the pixel at the given column and row
-//
-void Image::setPixelValue(int col, int row, const Color& color)
-{
-    data[row][col] = color;
-}
-
-void Image::saveImage(const char *imageName) const
-{
-    FILE *output;
-
-    output = fopen(imageName, "w");
-    fprintf(output, "P3\n");
-    fprintf(output, "%d %d\n", width, height);
-    fprintf(output, "255\n");
-
-    for(int y = 0 ; y < height; y++)
-    {
-        for(int x = 0 ; x < width; x++)
-        {
-            for (int c = 0; c < 3; ++c)
-            {
-                fprintf(output, "%d ", data[y][x].channel[c]);
-            }
-        }
-
-        fprintf(output, "\n");
-    }
-
-    fclose(output);
-}
-*/
-
 int main(int argc, char* argv[])
 {
     // Sample usage for reading an XML scene file
     //parser::Scene scene;
 
     scene.loadFromXml(argv[1]);
-
-
-
-    //printf("Mirror Reflectance Parameters: %d %d %d\n", scene.materials[0].mirror.x, scene.materials[0].mirror.y, scene.materials[0].mirror.z);
-    //printf("Diffues Reflectance Parameters: %lf %lf %lf\n", scene.materials[0].diffuse.x, scene.materials[0].diffuse.y, scene.materials[0].diffuse.z);
-    //printf("Diffues Reflectance Parameters: %lf %lf %lf\n", scene.materials[1].diffuse.x, scene.materials[1].diffuse.y, scene.materials[1].diffuse.z);
-
 
 
     const char* filename;
@@ -1238,8 +1040,6 @@ int main(int argc, char* argv[])
                     
             }
         }
-
-
 
 
         //img->saveImage(filename);
